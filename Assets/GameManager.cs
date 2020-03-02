@@ -10,21 +10,18 @@ public class GameManager : MonoBehaviour
     public static int score = 0;
     public Text scoreText;
 
-    public void GameOver(){
-        gameOverCanvas.SetActive(true);
-        Time.timeScale = 0;
-    }
+    public static bool GameStarted;
 
-    public void Replay()
-    {
-        SceneManager.LoadScene(0);
-
-    }
     // Start is called before the first frame update
     void Start()
     {
-        Time.timeScale = 1;
         score =0;
+        Time.timeScale = 1;
+
+        EventManager.AddListener(EventName.GameOverEvent,GameOver);
+        EventManager.AddListener(EventName.GameStartEvent,GameStart);
+        EventManager.AddListener(EventName.GameRestartEvent,GameRestart);
+        EventManager.AddListener(EventName.AddPointIntEvent,AddPoint);
     }
 
     // Update is called once per frame
@@ -33,7 +30,33 @@ public class GameManager : MonoBehaviour
         scoreText.text = score.ToString();
     }
 
-    void ShowingScore(){
+    public void GameOver(){
+        Time.timeScale = 0;
+        scoreText.gameObject.SetActive(false);
+        MenuManager.GoToMenu(MenuName.GameOverPage);
 
+        if(score>PlayerPrefs.GetInt("HighestScore"))
+        {
+            PlayerPrefs.SetInt("HighestScore",score);
+        }
+        PlayerPrefs.Save();
     }
+
+    public void GameRestart()
+    {
+        SceneManager.LoadScene(0);
+        scoreText.gameObject.SetActive(true);
+        GameStarted = false;
+    }
+
+    public void GameStart(){
+        GameStarted = true;
+    }
+
+    public void AddPoint(int point)
+    {
+        score+=point;
+    }
+
+
 }
